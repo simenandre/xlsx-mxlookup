@@ -2,16 +2,22 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"net"
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 
+	"github.com/cheggaaa/pb/v3"
 	"github.com/tealeg/xlsx"
 )
 
 var suppliers map[string]*regexp.Regexp
+
+type channelInfo struct {
+	RowInt int
+	Host   string
+}
 
 func init() {
 	suppliers = make(map[string]*regexp.Regexp)
@@ -22,7 +28,7 @@ func init() {
 
 func main() {
 	file := flag.String("input", "", "file path. eg. ./fixtures/domain-test.xlsx")
-	o := flag.String("output", "./test.xlsx", "eg. ./output.xlsx (defaults to output.xlsx)")
+	o := flag.String("output", "./output.xlsx", "eg. ./output.xlsx (defaults to output.xlsx)")
 	c := flag.Int("col", 6, "describe what column to read domain from")
 	flag.Parse()
 
@@ -42,24 +48,49 @@ func main() {
 	}
 
 	sh := wb.Sheets[0]
-	for _, r := range sh.Rows {
+	rows := len(sh.Rows)
+	bar := pb.StartNew(rows)
+	var wg sync.WaitGroup
+	ch := make(chan channelInfo, rows)
+
+	for i, r := range sh.Rows {
 		e := r.Cells[*c]
-		host, err := lookupMx(e.String())
-		if err == nil {
-			r.AddCell().SetString(host)
-		}
+		wg.Add(1)
+		go lookupMx(e.String(), i, ch, &wg, bar)
 	}
 
-	fmt.Println(*o)
+	wg.Wait()
+	close(ch)
+
+	for msg := range ch {
+		if msg.Host != "" {
+			sh.Rows[msg.RowInt].AddCell().SetString(msg.Host)
+		}
+	}
 
 	wb.Save(*o)
 }
 
-func lookupMx(domain string) (string, error) {
+func lookupMx(domain string, rowInt int, ch chan channelInfo, wg *sync.WaitGroup, bar *pb.ProgressBar) {
+	defer wg.Done()
+
+	var done = func(k string) {
+		chi := channelInfo{
+			RowInt: rowInt,
+			Host:   k,
+		}
+
+		bar.Increment()
+
+		ch <- chi
+
+	}
+
 	var r string
 	mxrecords, err := net.LookupMX(domain)
 	if err != nil {
-		return "", err
+		done(err.Error())
+		return
 	}
 
 	for _, mx := range mxrecords {
@@ -69,9 +100,11 @@ func lookupMx(domain string) (string, error) {
 
 	for key, t := range suppliers {
 		if t.MatchString(strings.ToLower(r)) {
-			return key, nil
+			done(key)
+			return
 		}
 	}
 
-	return r, nil
+	done(r)
+	return
 }
