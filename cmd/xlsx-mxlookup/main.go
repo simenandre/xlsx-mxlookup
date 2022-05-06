@@ -56,7 +56,7 @@ func main() {
 	for i, r := range sh.Rows {
 		e := r.Cells[*c]
 		wg.Add(1)
-		go lookupMx(e.String(), i, ch, &wg, bar)
+		lookupMx(e.String(), i, ch, &wg, bar)
 	}
 
 	wg.Wait()
