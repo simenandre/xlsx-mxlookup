@@ -1,0 +1,42 @@
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod download
+builds:
+  - main: ./cmd/xlsx-mxlookup/main.go
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+archives:
+  - replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: "checksums.txt"
+brews:
+  - tap:
+      owner: cobraz
+      name: homebrew-tools
+    commit_author:
+      name: Simen A. W. Olsen
+      email: cobraz@cobraz.no
+    homepage: https://github.com/cobraz/xlsx-mxlookup
+    description: Loop through a list of domains and return their MX records
+    folder: Formula
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
