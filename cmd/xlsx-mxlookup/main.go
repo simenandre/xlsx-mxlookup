@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/cheggaaa/pb/v3"
 	"github.com/tealeg/xlsx"
@@ -71,6 +72,27 @@ func main() {
 	wb.Save(*o)
 }
 
+
+func retry(attempts int, sleep time.Duration, fn func() error) error {
+	if err := fn(); err != nil {
+		if s, ok := err.(stop); ok {
+			// Return the original error for later checking
+			return s.error
+		}
+ 
+		if attempts--; attempts > 0 {
+			time.Sleep(sleep)
+			return retry(attempts, 2*sleep, fn)
+		}
+		return err
+	}
+	return nil
+}
+
+type stop struct {
+	error
+}
+
 func lookupMx(domain string, rowInt int, ch chan channelInfo, wg *sync.WaitGroup, bar *pb.ProgressBar) {
 	defer wg.Done()
 
@@ -86,25 +108,25 @@ func lookupMx(domain string, rowInt int, ch chan channelInfo, wg *sync.WaitGroup
 
 	}
 
-	var r string
-	mxrecords, err := net.LookupMX(domain)
-	if err != nil {
-		done(err.Error())
-		return
-	}
-
-	for _, mx := range mxrecords {
-		r = r + mx.Host + ","
-		// fmt.Println(mx.Host, mx.Pref)
-	}
-
-	for key, t := range suppliers {
-		if t.MatchString(strings.ToLower(r)) {
-			done(key)
-			return
+	retry(3, time.Second, func() error {
+		var r string
+		mxrecords, err := net.LookupMX(domain)
+		if err != nil {
+			return stop{err}
 		}
-	}
 
-	done(r)
-	return
+		for _, mx := range mxrecords {
+			r = r + mx.Host + ","
+		}
+
+		for key, t := range suppliers {
+			if t.MatchString(strings.ToLower(r)) {
+				done(key)
+				return nil
+			}
+		}
+
+		done(r)
+		return nil
+	})
 }
