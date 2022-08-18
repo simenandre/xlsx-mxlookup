@@ -7,7 +7,8 @@ before:
     # you may remove this if you don't need go generate
     - go generate ./...
 builds:
-  - env:
+  - main: ./cmd/xlsx-mxlookup/main.go
+    env:
       - CGO_ENABLED=0
     goos:
       - linux
@@ -20,6 +21,16 @@ archives:
       windows: Windows
       386: i386
       amd64: x86_64
+brews:
+  - tap:
+      owner: cobraz
+      name: homebrew-tools
+    commit_author:
+      name: Simen A. W. Olsen
+      email: cobraz@cobraz.no
+    homepage: https://github.com/cobraz/xlsx-mxlookup
+    description: Loop through a list of domains and return their MX records
+    folder: Formula
 checksum:
   name_template: 'checksums.txt'
 snapshot:
