@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/cobraz/xlsx-mxlookup/compare/v1.2.1...v1.2.2) (2022-08-18)
+
+
+### Miscellaneous Chores
+
+* release 1.2.2 ([353d349](https://github.com/cobraz/xlsx-mxlookup/commit/353d3497857c3339410681b765671bb59ced5046))
+
 ## [1.2.1](https://github.com/cobraz/xlsx-mxlookup/compare/v1.2.0...v1.2.1) (2022-08-18)
 
 
