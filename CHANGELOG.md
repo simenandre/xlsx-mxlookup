@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.3](https://github.com/cobraz/xlsx-mxlookup/compare/v1.2.2...v1.2.3) (2022-08-18)
+
+
+### Bug Fixes
+
+* Add homebrew and main file ([0929c07](https://github.com/cobraz/xlsx-mxlookup/commit/0929c0707cfe67d4dd442c47ae5f95321608f108))
+
 ## [1.2.2](https://github.com/cobraz/xlsx-mxlookup/compare/v1.2.1...v1.2.2) (2022-08-18)
 
 
