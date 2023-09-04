@@ -10,7 +10,7 @@ jobs:
   tag:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: google-github-actions/release-please-action@v3
       with:
         release-type: go
