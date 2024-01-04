@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/cheggaaa/pb/v3 v3.1.0
 	github.com/tealeg/xlsx v1.0.5
+	github.com/tealeg/xlsx/v3 v3.3.5
 )
 
 require (
